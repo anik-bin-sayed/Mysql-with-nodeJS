@@ -154,7 +154,7 @@ const Dashboard = () => {
                             </div>
                         ))
                     ) : (
-                        <p className="text-gray-500">No todos found</p>
+                        <p className="text-gray-500 text-center">No todos found</p>
                     )}
 
 
