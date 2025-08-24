@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+body {
+  background-color: #162556;
+}
+
 .input-focus-span {
   transform: translateX(-50%);
 }
