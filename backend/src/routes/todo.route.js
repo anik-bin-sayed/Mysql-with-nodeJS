@@ -8,7 +8,6 @@ const {
 const {
   authMiddleware,
   isLoggedIn,
-  isLoggedOut,
 } = require("../middlewares/auth.middleware");
 
 const router = express.Router();

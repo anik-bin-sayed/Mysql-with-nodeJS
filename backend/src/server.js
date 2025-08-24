@@ -11,15 +11,13 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // Vite dev server
-    credentials: true, // important
+    origin: "http://localhost:5173",
+    credentials: true,
   })
 );
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// route
 
 app.use("/api/auth", authRoute);
 app.use("/api/todos", todo_Router);

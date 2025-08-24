@@ -41,7 +41,7 @@ const Signin = () => {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100">
             <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-                <h2 className="text-2xl font-bold mb-6 text-center">Sign Up</h2>
+                <h2 className="text-2xl font-bold mb-6 text-center">Sign In</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label className="block text-gray-700">Email</label>
@@ -81,7 +81,7 @@ const Signin = () => {
                 <p className="mt-4 text-sm text-gray-500 text-center">
                     Already have an account?{" "}
                     <a href="/register" className="text-blue-500 hover:underline">
-                        Login
+                        Sign up
                     </a>
                 </p>
             </div>

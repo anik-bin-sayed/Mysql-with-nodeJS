@@ -29,7 +29,6 @@ const getTodos = (req, res) => {
 
       res.status(201).json({
         success: true,
-
         message: "Todos get success fully",
         todos: results,
       });
@@ -45,7 +44,7 @@ const updateTodo = (req, res) => {
     [completed, todoId, req.userId],
     (err) => {
       if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: "Todo updated" });
+      res.json({ message: "Todo updated Successfully" });
     }
   );
 };
@@ -58,7 +57,7 @@ const deleteTodo = (req, res) => {
     [todoId, user_id],
     (err) => {
       if (err) return res.status(500).json({ error: err.message });
-      res.json({ message: "Todo deleted" });
+      res.json({ message: "Todo deleted successfully" });
     }
   );
 };

@@ -1,10 +1,9 @@
 import { create } from "zustand";
 import axios from "axios";
-import Cookies from "js-cookie";
 
 const API = "http://localhost:3000/api";
 
-const useStore = create((set, get) => ({
+const useStore = create((set) => ({
   todos: [],
   isAuthenticated: false,
   user: null,
@@ -83,7 +82,6 @@ const useStore = create((set, get) => ({
       });
       set({
         user: res.data.user,
-        token: Cookies.get("token"),
         isLoading: false,
       });
       return true;
@@ -102,7 +100,7 @@ const useStore = create((set, get) => ({
       });
       set({
         todos: response.data.todos,
-        message: "Posts retrieved successfully",
+        message: "Todos retrieved successfully",
       });
       return response;
     } catch (error) {
@@ -139,15 +137,20 @@ const useStore = create((set, get) => ({
 
   toggleTodo: async (id, completed) => {
     try {
-      const { token } = get();
-      await axios.put(
+      const response = await axios.put(
         `${API}/todos/${id}`,
         { completed },
-        { headers: { Authorization: token } }
+        { withCredentials: true }
       );
-      get().fetchTodos();
+
+      set((state) => ({
+        todos: state.todos.map((todo) =>
+          todo.id === id ? { ...todo, completed } : todo
+        ),
+      }));
+      return response;
     } catch (err) {
-      console.error(err);
+      throw err;
     }
   },
 
@@ -160,7 +163,7 @@ const useStore = create((set, get) => ({
         todos: state.todos.filter((todo) => todo.id !== id),
       }));
     } catch (err) {
-      console.error(err);
+      throw err;
     }
   },
 }));
