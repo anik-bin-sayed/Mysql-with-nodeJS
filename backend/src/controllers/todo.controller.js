@@ -2,7 +2,6 @@ const db = require("../config/db");
 
 const createTodo = (req, res) => {
   const { title } = req.body;
-  // Logic to create a new todo
   db.query(
     "INSERT INTO todos (user_id, title) VALUES (?, ?)",
     [req.userId, title],

@@ -58,20 +58,29 @@ const signin = async (req, res) => {
         if (!isMatched)
           return res.status(401).json({ message: "Invalid credentials" });
 
-        const token = jsonwebtoken.sign({ id: user.id }, jwt_secret, {
-          expiresIn: "1h",
+        const accessToken = jsonwebtoken.sign({ id: user.id }, jwt_secret, {
+          expiresIn: "1m",
+        });
+        const refreshToken = jsonwebtoken.sign({ id: user.id }, jwt_secret, {
+          expiresIn: "30d",
         });
 
-        res.cookie("token", token, {
+        res.cookie("token", accessToken, {
           httpOnly: true,
           secure: false,
           sameSite: "lax",
-          maxAge: 3600000,
+          maxAge: 3600000, // 1h
+        });
+
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+          maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
         });
 
         res.status(200).json({
           message: "Login successful",
-          token,
           userId: user.id,
           username: user.username,
           email: user.email,
@@ -85,6 +94,7 @@ const signin = async (req, res) => {
 
 const logout = async (req, res) => {
   res.clearCookie("token");
+  res.clearCookie("refreshToken");
   res.status(200).json({
     success: true,
     message: "User logged out successfully",
@@ -93,12 +103,13 @@ const logout = async (req, res) => {
 
 const handleCheckAuth = (req, res) => {
   try {
-    const token = req.cookies.token;
-    if (!token) {
+    const accessToken = req.cookies.token;
+
+    if (!accessToken) {
       return res.status(401).json({ message: "Not authenticated" });
     }
 
-    const decoded = jsonwebtoken.verify(token, jwt_secret);
+    const decoded = jsonwebtoken.verify(accessToken, jwt_secret);
 
     db.query(
       "SELECT id, username, email FROM users WHERE id = ?",
@@ -121,9 +132,75 @@ const handleCheckAuth = (req, res) => {
   }
 };
 
+const refreshToken = (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+
+  if (!refreshToken) {
+    return res.status(403).json({
+      success: false,
+      message: "No refresh token",
+    });
+  }
+
+  jsonwebtoken.verify(refreshToken, jwt_secret, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({
+        success: false,
+        message: "Invalid refresh token",
+      });
+    }
+
+    // decoded এর ভেতর id আছে
+    db.query(
+      "SELECT id FROM users WHERE id = ?",
+      [decoded.id],
+      (err, results) => {
+        if (err) {
+          return res.status(500).json({ error: err.message });
+        }
+
+        if (results.length === 0) {
+          return res.status(401).json({ message: "User not found" });
+        }
+
+        const user = results[0];
+
+        const newAccessToken = jsonwebtoken.sign({ id: user.id }, jwt_secret, {
+          expiresIn: "1h",
+        });
+
+        const newRefreshToken = jsonwebtoken.sign({ id: user.id }, jwt_secret, {
+          expiresIn: "7d",
+        });
+
+        res.cookie("token", newAccessToken, {
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+          maxAge: 3600000, // 1 hour
+        });
+
+        res.cookie("refreshToken", newRefreshToken, {
+          httpOnly: true,
+          secure: false,
+          sameSite: "lax",
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 দিন
+        });
+
+        return res.json({
+          success: true,
+          message: "Access token refreshed successfully",
+          token: newAccessToken,
+        });
+      }
+    );
+  });
+};
+
 module.exports = {
   signup,
   signin,
   logout,
   handleCheckAuth,
+  refreshToken,
 };

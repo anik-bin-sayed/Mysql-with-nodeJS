@@ -13,7 +13,7 @@ import Loading from './Loading';
 const Dashboard = () => {
     const [todoText, setTodoText] = useState('');
 
-    const { logout, addTodo, user, fetchTodos, todos, isLoading, deleteTodo, toggleTodo } = useStore();
+    const { logout, addTodo, user, fetchTodos, todos, isLoading, deleteTodo, toggleTodo, refreshToken } = useStore();
 
     const handleAddTodo = async (event) => {
         event.preventDefault();
@@ -55,7 +55,13 @@ const Dashboard = () => {
     };
 
     useEffect(() => {
-        fetchTodos();
+        const initialize = async () => {
+            const token = await refreshToken();
+
+            fetchTodos(token);
+        };
+
+        initialize();
     }, []);
 
     if (isLoading) {
@@ -126,29 +132,29 @@ const Dashboard = () => {
                 <div className='mt-4 h-[400px] overflow-y-auto '>
                     {Array.isArray(todos) && todos.length > 0 ? (
                         todos.map((todo, index) => (
-                            <div key={index} className='mx-2'>
-                                <div className={`bg-blue-950 text-white rounded p-2 mt-2 cursor-pointer hover:bg-blue-900 transition w-full ${todo?.completed == 1 ? 'line-through' : ''}`}>
+                            <div key={index} className="group mx-2 mb-4 rounded-lg overflow-hidden shadow">
+                                {/* Todo Title */}
+                                <div
+                                    className={`bg-blue-950 text-white rounded-t p-3 cursor-pointer transition-all text-justify ${todo?.completed == 1 ? 'line-through' : ''}`}
+                                >
                                     {todo?.title}
                                 </div>
-                                <div className="flex justify-center items-center px-2 py-1 gap-4 bg-gray-100">
+
+                                {/* Actions: hidden by default, show on hover */}
+                                <div
+                                    className="bg-gray-100 flex justify-between px-4 text-sm transition-all duration-500 ease-in-out max-h-0 opacity-0 overflow-hidden group-hover:max-h-16 group-hover:opacity-100"
+                                >
                                     <button
                                         onClick={() => handleDeleteTodo(todo.id)}
-                                        className="text-red-500 cursor-pointer hover:underline transition"
+                                        className="text-red-500 py-2 hover:underline transition cursor-pointer"
                                     >
                                         Delete task
-                                        {/* <MdDelete /> */}
                                     </button>
                                     <button
                                         onClick={() => handleToggleTodo(todo.id, todo.completed)}
-                                        className="text-blue-500 cursor-pointer hover:underline transition"
+                                        className="text-blue-500 py-2 hover:underline transition cursor-pointer"
                                     >
-                                        {todo?.completed === 0 ? (
-                                            // <MdOutlineCheckBoxOutlineBlank />
-                                            'Mark as completed'
-                                        ) : (
-                                            // <IoMdCheckbox />
-                                            'Mark as uncompleted'
-                                        )}
+                                        {todo?.completed === 0 ? 'Mark as completed' : 'Mark as uncompleted'}
                                     </button>
                                 </div>
                             </div>
@@ -156,6 +162,7 @@ const Dashboard = () => {
                     ) : (
                         <p className="text-gray-500 text-center">No todos found</p>
                     )}
+
 
 
 

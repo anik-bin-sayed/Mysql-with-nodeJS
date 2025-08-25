@@ -2,16 +2,16 @@ const jwt = require("jsonwebtoken");
 const { jwt_secret } = require("../secret");
 
 const authMiddleware = (req, res, next) => {
-  const token = req.cookies.token;
+  const accessToken = req.cookies.token;
 
-  if (!token) {
+  if (!accessToken) {
     return res.status(403).json({
       success: false,
       message: "Token is required",
     });
   }
 
-  jwt.verify(token, jwt_secret, (err, decoded) => {
+  jwt.verify(accessToken, jwt_secret, (err, decoded) => {
     if (err) {
       return res.status(401).json({
         success: false,
@@ -26,9 +26,9 @@ const authMiddleware = (req, res, next) => {
 
 const isLoggedOut = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const accessToken = req.cookies.token;
 
-    if (token) {
+    if (accessToken) {
       return res.status(401).json({
         success: false,
         message: "You are already logged in",
@@ -42,10 +42,12 @@ const isLoggedOut = async (req, res, next) => {
 
 const isLoggedIn = (req, res, next) => {
   try {
-    const token = req.cookies.token;
-    if (!token) {
+    const accessToken = req.cookies.token;
+
+    if (!accessToken) {
       return res.json({ message: "Token not found. Please login first" });
     }
+
     next();
   } catch (error) {
     next(error);

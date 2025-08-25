@@ -106,6 +106,7 @@ const useStore = create((set) => ({
     } catch (error) {
       set({
         error: error.response?.data?.message || "Error retrieving posts",
+        isLoading: false,
       });
       throw error;
     } finally {
@@ -164,6 +165,20 @@ const useStore = create((set) => ({
       }));
     } catch (err) {
       throw err;
+    }
+  },
+
+  refreshToken: async () => {
+    try {
+      await axios.post(
+        `${API}/auth/refresh-token`,
+        {},
+        {
+          withCredentials: true,
+        }
+      );
+    } catch (error) {
+      console.error("Refresh token failed", error);
     }
   },
 }));
